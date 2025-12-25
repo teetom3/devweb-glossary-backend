@@ -12,7 +12,6 @@ class Term extends Model
         'slug',
         'title',
         'category_id',
-        'description_short',
         'is_approved',
         'created_by_id',
     ];

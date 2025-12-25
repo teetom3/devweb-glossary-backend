@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Term;
+use App\Models\Definition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -45,32 +46,44 @@ class TermController extends Controller
         ->where('is_approved', true)
         ->firstOrFail();
 
-        // Increment views for all definitions
-        foreach ($term->approvedDefinitions as $definition) {
-            $definition->incrementViews();
+        // Get the best definition (highest score) for the hero section
+        $bestDefinition = $term->approvedDefinitions->first();
+
+        // Add the best definition to the response
+        $termArray = $term->toArray();
+        $termArray['best_definition'] = $bestDefinition;
+
+        return response()->json($termArray);
+    }
+
+    public function incrementView(Request $request, $slug)
+    {
+        $term = Term::where('slug', $slug)->firstOrFail();
+
+        // Increment views for all approved definitions
+        $definitionIds = $request->input('definition_ids', []);
+
+        if (!empty($definitionIds)) {
+            Definition::whereIn('id', $definitionIds)
+                ->where('term_id', $term->id)
+                ->where('is_approved', true)
+                ->increment('views_count');
         }
 
-        return response()->json($term);
+        return response()->json(['message' => 'Views incremented']);
     }
 
     public function store(Request $request)
     {
-        // Only admins can create terms
-        if (!$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'description_short' => 'required|string|max:500',
         ]);
 
         $term = Term::create([
             'title' => $validated['title'],
             'slug' => Str::slug($validated['title']),
             'category_id' => $validated['category_id'],
-            'description_short' => $validated['description_short'],
             'is_approved' => true,
             'created_by_id' => $request->user()->id,
         ]);
@@ -80,17 +93,11 @@ class TermController extends Controller
 
     public function update(Request $request, $id)
     {
-        // Only admins can update terms
-        if (!$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $term = Term::findOrFail($id);
 
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'category_id' => 'sometimes|exists:categories,id',
-            'description_short' => 'sometimes|string|max:500',
             'is_approved' => 'sometimes|boolean',
         ]);
 
@@ -105,11 +112,6 @@ class TermController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        // Only admins can delete terms
-        if (!$request->user()->isAdmin()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
         $term = Term::findOrFail($id);
         $term->delete();
 

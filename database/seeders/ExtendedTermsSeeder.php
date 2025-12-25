@@ -522,7 +522,6 @@ class ExtendedTermsSeeder extends Seeder
                     Term::create([
                         'title' => $termData['title'],
                         'slug' => $slug,
-                        'description_short' => $termData['description_short'],
                         'category_id' => $category->id,
                         'created_by_id' => $admin->id,
                         'is_approved' => true,

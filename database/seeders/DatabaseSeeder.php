@@ -64,10 +64,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CategorySeeder::class,
             TermSeeder::class,
-            DefinitionSeeder::class,
             ExtendedTermsSeeder::class,
+            DefinitionSeeder::class,
             ExtendedDefinitionsSeeder::class,
-            VoteSeeder::class,
         ]);
     }
 }

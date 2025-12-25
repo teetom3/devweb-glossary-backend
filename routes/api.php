@@ -18,6 +18,7 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']);
 // Terms (public read)
 Route::get('/terms', [TermController::class, 'index']);
 Route::get('/terms/{slug}', [TermController::class, 'show']);
+Route::post('/terms/{slug}/view', [TermController::class, 'incrementView']);
 
 // Definitions (public read)
 Route::get('/definitions', [DefinitionController::class, 'index']);
@@ -29,7 +30,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    // Terms (create/update/delete - admin only, checked in controller)
+    // Categories (create/update/delete)
+    Route::post('/categories', [CategoryController::class, 'store']);
+    Route::put('/categories/{id}', [CategoryController::class, 'update']);
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
+
+    // Terms (create/update/delete)
     Route::post('/terms', [TermController::class, 'store']);
     Route::put('/terms/{id}', [TermController::class, 'update']);
     Route::delete('/terms/{id}', [TermController::class, 'destroy']);
